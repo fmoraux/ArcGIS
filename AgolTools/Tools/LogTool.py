@@ -51,11 +51,12 @@ class LogTool(object):
         return LogTool.__instance
     ##end def __new__
 
-    def __init__(self, printFlag=True, loggingFlag=False, loggingDirPath=None, loggingPrefix="Log", loggingDateSufix=True):
+    def __init__(self, printFlag=True, loggingFlag=False, loggingArcGisFlag=False, loggingDirPath=None, loggingPrefix="Log", loggingDateSufix=True):
         """
         Initialisation
         :param printFlag: Flag pour l'ajout des messages dans la console
         :param loggingFlag: Flag pour l'ajout des messages dans un fichier de log
+        :param loggingArcGisFlag: Flag pour l'ajout des messages dans ArcGIS
         :param loggingDirPath : Chemin du dossier où générer les logs
         :param loggingPrefix : Préfixe utilisé pour nommé le fichier de log
         :param loggingDateSufix : Flag utilisé pour suffixer le nom du fichier de log avec la date courante
@@ -66,6 +67,15 @@ class LogTool(object):
         self.__loggingDirPath = loggingDirPath
         self.__loggingPrefix = loggingPrefix
         self.__loggingDateSufix = loggingDateSufix
+        
+        # On test l'import d'arcpy avant d'initialiser les logs ArcGIS
+        try:
+            import arcpy
+        except:
+            loggingArcGisFlag = False
+        ##end try
+            
+        self.__loggingArcGisFlag = loggingArcGisFlag
 
         # Initialisation du logger
         if (self.__loggingFlag):
@@ -74,7 +84,7 @@ class LogTool(object):
             else:
                 loggingName = "{}.log".format(self.__loggingPrefix)
             ##end if
-
+            
             loggingPath = os.path.join(self.__loggingDirPath, loggingName)
             logging.basicConfig(filename=loggingPath, level=LogTool.LOGGING_LEVEL, format=LogTool.LOGGING_FORMAT, datefmt=LogTool.DATE_FORMAT)
         ##end if
@@ -92,6 +102,9 @@ class LogTool(object):
         if(self.__loggingFlag):
             logging.debug(message)
         ##end if
+        if(self.__loggingArcGisFlag):
+            arcpy.AddMessage(message)
+        ##end if
     ##end def addInfo
 
     def addWarning(self, message):
@@ -106,6 +119,9 @@ class LogTool(object):
         if(self.__loggingFlag):
             logging.warning(message)
         ##end if
+        if(self.__loggingArcGisFlag):
+            arcpy.AddWarning(message)
+        ##end if
     ##end def addWarning
 
     def addError(self, message):
@@ -119,6 +135,9 @@ class LogTool(object):
         ##end if
         if(self.__loggingFlag):
             logging.error(message)
+        ##end if
+        if(self.__loggingArcGisFlag):
+            arcpy.AddError(message)
         ##end if
     ##end def addError
 

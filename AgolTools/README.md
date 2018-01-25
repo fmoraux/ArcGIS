@@ -1,12 +1,13 @@
+
 Aide
 ====
 
 Aide à l'utilisation des scripts contenu dans le package **AgolTools** :
->- **[EncodePassword](Aide.md#encodepassword)** pour l'encodage d'un mot de passe ;
->- **[CopyUserItems](Aide.md#copyuseritems)** pour la copie du contenu d'un utilisateur nommé à un autre ;
->- **[GetWebMaps](Aide.md#getwebmaps)** pour récupérer la liste des services des webmaps au format CSV ;
->- **[GetWebMapsBroken](Aide.md#getwebmapsbroken)** pour récupérer la liste des services des webmaps et leurs états au format CSV ;
->- **[WhatsNew](Aide.md#whatsnew)** pour récupérer la liste des nouveautés au format CSV ;
+>- **[EncodePassword](README.md#encodepassword)** pour l'encodage d'un mot de passe ;
+>- **[CopyUserItems](README.md#copyuseritems)** pour la copie du contenu d'un utilisateur nommé à un autre ;
+>- **[GetWebMaps](README.md#getwebmaps)** pour récupérer la liste des services des webmaps au format CSV ;
+>- **[GetWebMapsBroken](README.md#getwebmapsbroken)** pour récupérer la liste des services des webmaps et leurs états au format CSV ;
+>- **[WhatsNew](README.md#whatsnew)** pour récupérer la liste des nouveautés au format CSV ;
 
 
 **Prérequis :**
@@ -28,6 +29,8 @@ Encodage d'un mot de passe (en base 64).
 #### <i class="icon-file"></i> Execution
 
 Voir le fichier de commande **AgolTools_EncodePassword.bat** et saisir le mot de passe à encoder.
+
+*Egalement disponible depuis la boîte à outils **AgolTools_ArcGISPro** dans ArcGIS Pro.*
 
 #### <i class="icon-file"></i> Résultat
 
@@ -57,17 +60,17 @@ Renseigner au préalable le fichier **Configuration.ini** :
 
     ; Configuration liée à l'organisation ArcGIS Online/Portal
     [ORGANISATION]
-    Url=http://www.arcgis.com
+    URL=http://www.arcgis.com
     USER=
     PASSWORD=
-    PASSWORD_ENCRYPTED=True
+    PASSWORD_ENCRYPTED=
 
     ; Configuration liée à une deuxième organisation ArcGIS Online/Portal
     [ORGANISATION2]
-    Url=http://www.arcgis.com
+    URL=http://www.arcgis.com
     USER=
     PASSWORD=
-    PASSWORD_ENCRYPTED=True
+    PASSWORD_ENCRYPTED=
 
 Avec :
 
@@ -75,13 +78,13 @@ Avec :
 	 - ***LOG_DIR*** : Dossier où stocker les fichiers de log (***chemin relatif ou absolu, par défaut 'Log'***)
 
  - ***ORGANISATION*** : pour la configuration de l'utilisateur nommé source
-	 - ***Url*** : Url de l'organisation ArcGIS
+	 - ***URL*** : Url de l'organisation ArcGIS
 	 - ***USER*** : Identifiant de l'utilisateur nommé
 	 - ***PASSWORD*** : Mot de passe de l'utilisateur nommé
 	 - ***PASSWORD_ENCRYPTED*** : Flag si le mot de passe est encrypté (***True***) ou non (***False***)
 
  - ***ORGANISATION2*** : pour la configuration de l'utilisateur nommé cible
-	 - ***Url*** : Url de l'organisation ArcGIS
+	 - ***URL*** : Url de l'organisation ArcGIS
 	 - ***USER*** : Identifiant de l'utilisateur nommé
 	 - ***PASSWORD*** : Mot de passe de l'utilisateur nommé
 	 - ***PASSWORD_ENCRYPTED*** : Flag si le mot de passe est encrypté (***True***) ou non (***False***)
@@ -89,6 +92,8 @@ Avec :
 #### <i class="icon-file"></i> Execution
 
 Voir le fichier de commande **AgolTools_CopyUserItems.bat**.
+
+*Egalement disponible depuis la boîte à outils **AgolTools_ArcGISPro** dans ArcGIS Pro.*
 
 
 ----------
@@ -111,9 +116,10 @@ Renseigner au préalable le fichier **Configuration.ini** :
 
     ; Configuration liée à l'organisation ArcGIS Online/Portal
     [ORGANISATION]
-    Url=http://www.arcgis.com
+    URL=http://www.arcgis.com
     USER=
     PASSWORD=
+    PASSWORD_ENCRYPTED=
 
 Avec :
 
@@ -123,7 +129,7 @@ Avec :
 	 - ***MAX_ITEMS*** : Nombre d'item maximale à analyser
 
   - ***ORGANISATION*** : pour la configuration de l'organisation
-	 - ***Url*** : Url de l'organisation ArcGIS
+	 - ***URL*** : Url de l'organisation ArcGIS
 	 - ***USER*** : Identifiant de l'utilisateur nommé
 	 - ***PASSWORD*** : Mot de passe de l'utilisateur nommé
 	 - ***PASSWORD_ENCRYPTED*** : Flag si le mot de passe est encrypté (***True***) ou non (***False***)
@@ -131,6 +137,8 @@ Avec :
 #### <i class="icon-file"></i> Execution
 
 Voir le fichier de commande **AgolTools_GetWebMaps.bat**.
+
+*Egalement disponible depuis la boîte à outils **AgolTools_ArcGISPro** dans ArcGIS Pro.*
 
 #### <i class="icon-file"></i> Résultat
 
@@ -163,9 +171,10 @@ Renseigner au préalable le fichier **Configuration.ini** :
 
     ; Configuration liée à l'organisation ArcGIS Online/Portal
     [ORGANISATION]
-    Url=http://www.arcgis.com
+    URL=http://www.arcgis.com
     USER=
     PASSWORD=
+    PASSWORD_ENCRYPTED=
 
 Avec :
 
@@ -175,7 +184,7 @@ Avec :
 	 - ***MAX_ITEMS*** : Nombre d'item maximale à analyser
 
   - ***ORGANISATION*** : pour la configuration de l'organisation
-	 - ***Url*** : Url de l'organisation ArcGIS
+	 - ***URL*** : Url de l'organisation ArcGIS
 	 - ***USER*** : Identifiant de l'utilisateur nommé
 	 - ***PASSWORD*** : Mot de passe de l'utilisateur nommé
 	 - ***PASSWORD_ENCRYPTED*** : Flag si le mot de passe est encrypté (***True***) ou non (***False***)
@@ -183,6 +192,8 @@ Avec :
 #### <i class="icon-file"></i> Execution
 
 Voir le fichier de commande **AgolTools_GetWebMapsBroken.bat**.
+
+*Egalement disponible depuis la boîte à outils **AgolTools_ArcGISPro** dans ArcGIS Pro.*
 
 #### <i class="icon-file"></i> Résultat
 
@@ -224,9 +235,10 @@ Renseigner au préalable le fichier **Configuration.ini** :
 
     ; Configuration liée à l'organisation ArcGIS Online/Portal
     [ORGANISATION]
-    Url=http://www.arcgis.com
+    URL=http://www.arcgis.com
     USER=
     PASSWORD=
+    PASSWORD_ENCRYPTED=
 
     ; Configuration liée à l'outil "WhatsNew"
     [WHATS_NEW]
@@ -240,7 +252,7 @@ Avec :
 	 - ***MAX_ITEMS*** : Nombre d'item maximale à analyser
 
   - ***ORGANISATION*** : pour la configuration de l'organisation
-	 - ***Url*** : Url de l'organisation ArcGIS
+	 - ***URL*** : Url de l'organisation ArcGIS
 	 - ***USER*** : Identifiant de l'utilisateur nommé
 	 - ***PASSWORD*** : Mot de passe de l'utilisateur nommé
 	 - ***PASSWORD_ENCRYPTED*** : Flag si le mot de passe est encrypté (***True***) ou non (***False***)
@@ -251,6 +263,8 @@ Avec :
 #### <i class="icon-file"></i> Execution
 
 Voir le fichier de commande **AgolTools_GetWebMapsBroken.bat**.
+
+*Egalement disponible depuis la boîte à outils **AgolTools_ArcGISPro** dans ArcGIS Pro.*
 
 #### <i class="icon-file"></i> Résultat
 

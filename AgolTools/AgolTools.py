@@ -45,9 +45,16 @@ def __CheckParamFolder(folder, folderDefault):
 
 # --------------------------------------------------
 
-def CopyUserItems():
+def CopyUserItems(loggingArcGisFlag=False, agolUrl=None, agolUserName=None, agolUserPassword=None, agolUrl2=None, agolUserName2=None, agolUserPassword2=None):
     """
     Copie du contenu d'un utilisateur nommé d'une organisation à une autre
+    :param loggingArcGisFlag: Flag pour l'ajout des messages dans ArcGIS
+    :param agolUrl : Url de l'organisation ArcGIS (si utilisation depuis une TBX ArcGIS Pro)
+    :param agolUserName : Identifiant de l'utilisateur nommé (si utilisation depuis une TBX ArcGIS Pro)
+    :param agolUserPassword : Mot de passe de l'utilisateur nommé (si utilisation depuis une TBX ArcGIS Pro)
+    :param agolUrl2 : Url de l'organisation ArcGIS (si utilisation depuis une TBX ArcGIS Pro)
+    :param agolUserName2 : Identifiant de l'utilisateur nommé (si utilisation depuis une TBX ArcGIS Pro)
+    :param agolUserPassword2 : Mot de passe de l'utilisateur nommé (si utilisation depuis une TBX ArcGIS Pro)
     :return:
     """
     # Initialisation de la configuration
@@ -57,26 +64,38 @@ def CopyUserItems():
 
     # Initialisation des logs
     logPath = __CheckParamFolder(config.getValue("MAIN", "LOG_DIR"), DEFAULT_DIR_LOG)
-    LogTool(printFlag=True, loggingFlag=True, loggingDirPath=logPath)
+    LogTool(printFlag=True, loggingFlag=True, loggingArcGisFlag=loggingArcGisFlag, loggingDirPath=logPath)
     LogTool.Instance().addInfo("==========================================================================")
     LogTool.Instance().addInfo("Copie du contenu d'un utilisateur nommé d'une organisation à une autre")
 
     # Récupération de la configuration
     # ==> Configuration liée à l'organisation source
-    agolUrl = config.getValue('ORGANISATION', 'url')
-    agolUserName = config.getValue('ORGANISATION', 'USER')
-    agolUserPassword = config.getValue('ORGANISATION', 'PASSWORD')
-    agolUserPasswordEncrypted = config.getValue('ORGANISATION', 'PASSWORD_ENCRYPTED')
-    if (agolUserPasswordEncrypted):
-        agolUserPassword = CryptoTool.Decode(agolUserPassword)
+    if(agolUrl==None):
+        agolUrl = config.getValue('ORGANISATION', 'URL')
+    ##end if
+    if(agolUserName==None):
+        agolUserName = config.getValue('ORGANISATION', 'USER')
+    ##end if
+    if(agolUserPassword==None):
+        agolUserPassword = config.getValue('ORGANISATION', 'PASSWORD')
+        agolUserPasswordEncrypted = config.getValue('ORGANISATION', 'PASSWORD_ENCRYPTED')
+        if (agolUserPasswordEncrypted):
+            agolUserPassword = CryptoTool.Decode(agolUserPassword)
+        ##end if
     ##end if
     # ==> Configuration liée à l'organisation cible
-    agolUrl2 = config.getValue('ORGANISATION2', 'url')
-    agolUserName2 = config.getValue('ORGANISATION2', 'USER')
-    agolUserPassword2 = config.getValue('ORGANISATION2', 'PASSWORD')
-    agolUserPasswordEncrypted2 = config.getValue('ORGANISATION2', 'PASSWORD_ENCRYPTED')
-    if (agolUserPasswordEncrypted2):
-        agolUserPassword2 = CryptoTool.Decode(agolUserPassword2)
+    if(agolUrl2==None):
+        agolUrl2 = config.getValue('ORGANISATION2', 'URL')
+    ##end if
+    if(agolUserName2==None):
+        agolUserName2 = config.getValue('ORGANISATION2', 'USER')
+    ##end if
+    if(agolUserPassword2==None):
+        agolUserPassword2 = config.getValue('ORGANISATION2', 'PASSWORD')
+        agolUserPasswordEncrypted2 = config.getValue('ORGANISATION2', 'PASSWORD_ENCRYPTED')
+        if (agolUserPasswordEncrypted2):
+            agolUserPassword2 = CryptoTool.Decode(agolUserPassword2)
+        ##end if
     ##end if
 
     # Initialisation des connexions aux organisations
@@ -111,10 +130,12 @@ def CopyUserItems():
     LogTool.Instance().addInfo("==========================================================================")
 ##end def CopyUserItems
 
-def EncodePassword():
+def EncodePassword(loggingArcGisFlag=False, password=None):
     """
     Encodage d'un mot de passe
-    :return:
+    :param loggingArcGisFlag: Flag pour l'ajout des messages dans ArcGIS
+    :param paramPassword : Mot de passe à encoder (si utilisation depuis une TBX ArcGIS Pro)
+    :return passwordEncoded: Mot depasse encodé
     """
     # Initialisation de la configuration
     scriptDirPath = os.path.dirname(os.path.realpath(__file__))
@@ -123,12 +144,16 @@ def EncodePassword():
 
     # Initialisation des logs
     logPath = __CheckParamFolder(config.getValue("MAIN", "LOG_DIR"), "Log")
-    LogTool(printFlag=True, loggingFlag=True, loggingDirPath=logPath)
+    LogTool(printFlag=True, loggingFlag=True, loggingArcGisFlag=loggingArcGisFlag, loggingDirPath=logPath)
     LogTool.Instance().addInfo("==========================================================================")
     LogTool.Instance().addInfo("Encodage d'un mot de passe...")
 
-    password = getpass._raw_input("Mot de passe à encoder ?")
+    # Si pas utilisation depuis une TBX ArcGIS Pro alors on demande la valeur
+    if(password == None):
+        password = getpass._raw_input("Mot de passe à encoder ?")
+    ##end if
 
+    passwordEncoded = None
     if(password != None and len(password)>0):
         print("Mot de passe à encoder : {}".format(password))
         passwordEncoded = CryptoTool.Encode(password)
@@ -136,15 +161,20 @@ def EncodePassword():
     ##end if
 
     LogTool.Instance().addInfo("==========================================================================")
+    return passwordEncoded
 ##end def EncodePassword
 
-def GetWebMaps(resultCsvName="AgolTools_GetWebMaps", flagTestServices=False):
+def GetWebMaps(loggingArcGisFlag=False, resultCsvName="AgolTools_GetWebMaps", agolUrl=None, agolUserName=None, agolUserPassword=None, flagTestServices=False):
     """
     Retourne la liste des webmap avec des url de service
+    :param loggingArcGisFlag: Flag pour l'ajout des messages dans ArcGIS
     :param onlyBroken : Flag pour lister seulement les webmaps cassées
     :param resultCsvName : Nom du fichier CSV résultat
-    :param flagTestServices: Flag pour tester l'URL des servcies des webmaps
-    :return:
+    :param agolUrl : Url de l'organisation ArcGIS (si utilisation depuis une TBX ArcGIS Pro)
+    :param agolUserName : Identifiant de l'utilisateur nommé (si utilisation depuis une TBX ArcGIS Pro)
+    :param agolUserPassword : Mot de passe de l'utilisateur nommé (si utilisation depuis une TBX ArcGIS Pro)
+    :param flagTestServices: Flag pour tester l'URL des services des webmaps
+    :return: Chemin du fichier CSV résultat
     """
     # Initialisation de la configuration
     scriptDirPath = os.path.dirname(os.path.realpath(__file__))
@@ -153,30 +183,36 @@ def GetWebMaps(resultCsvName="AgolTools_GetWebMaps", flagTestServices=False):
 
     # Initialisation des logs
     logPath = __CheckParamFolder(config.getValue("MAIN", "LOG_DIR"), DEFAULT_DIR_LOG)
-    LogTool(printFlag=True, loggingFlag=True, loggingDirPath=logPath)
+    LogTool(printFlag=True, loggingFlag=True, loggingArcGisFlag=loggingArcGisFlag, loggingDirPath=logPath)
     LogTool.Instance().addInfo("==========================================================================")
     if(flagTestServices):
-        LogTool.Instance().addInfo("Liste des webmap avec les url de servcie (non fonctionnel)")
+        LogTool.Instance().addInfo("Liste des webmap avec les url de services (non fonctionnel)")
     else:
-        LogTool.Instance().addInfo("Liste des webmap avec les url de servcie")
+        LogTool.Instance().addInfo("Liste des webmap avec les url de services")
     ##end if
 
     # ==> Configuration générales
     resultDir = __CheckParamFolder(config.getValue("MAIN", "RESULT_DIR"), DEFAULT_DIR_RESULT)
     maxItems = int(config.getValue("MAIN", "MAX_ITEMS"))
     # ==> Configuration liée à l'organisation source
-    agolUrl = config.getValue('ORGANISATION', 'url')
-    agolUserName = config.getValue('ORGANISATION', 'USER')
-    agolUserPassword = config.getValue('ORGANISATION', 'PASSWORD')
-    agolUserPasswordEncrypted = config.getValue('ORGANISATION', 'PASSWORD_ENCRYPTED')
-    if (agolUserPasswordEncrypted):
-        agolUserPassword = CryptoTool.Decode(agolUserPassword)
+    if(agolUrl == None):
+        agolUrl = config.getValue('ORGANISATION', 'URL')
+    ##end if
+    if(agolUserName == None):
+        agolUserName = config.getValue('ORGANISATION', 'USER')
+    ##end if
+    if(agolUserPassword == None):
+        agolUserPassword = config.getValue('ORGANISATION', 'PASSWORD')
+        agolUserPasswordEncrypted = config.getValue('ORGANISATION', 'PASSWORD_ENCRYPTED')
+        if (agolUserPasswordEncrypted):
+            agolUserPassword = CryptoTool.Decode(agolUserPassword)
+        ##end if
     ##end if
 
     # Initialisation des connexions aux organisations
     agol = AgolToolsSDK(agolUrl, agolUserName, agolUserPassword)
 
-    # Récupération de la liste des servcies des webmaps
+    # Récupération de la liste des services des webmaps
     webmapsServices = agol.getWebmapsServices(maxItems=maxItems, flagTestServices=flagTestServices)
 
     # Export CSV de la liste
@@ -201,12 +237,19 @@ def GetWebMaps(resultCsvName="AgolTools_GetWebMaps", flagTestServices=False):
     LogTool.Instance().addInfo("Résultat :")
     LogTool.Instance().addInfo(" - CSV : {}".format(csvFile.filePath))
     LogTool.Instance().addInfo("==========================================================================")
+    
+    return csvFile.filePath
 ##end def GetWebMaps
 
-def WhatsNew():
+def WhatsNew(loggingArcGisFlag=False, agolUrl=None, agolUserName=None, agolUserPassword=None, fromDate=None):
     """
     Récupère la liste des élements nouveaux dans l'organisation
-    :return:
+    :param loggingArcGisFlag: Flag pour l'ajout des messages dans ArcGIS
+    :param agolUrl : Url de l'organisation ArcGIS (si utilisation depuis une TBX ArcGIS Pro)
+    :param agolUserName : Identifiant de l'utilisateur nommé (si utilisation depuis une TBX ArcGIS Pro)
+    :param agolUserPassword : Mot de passe de l'utilisateur nommé (si utilisation depuis une TBX ArcGIS Pro)
+    :param fromDate : Date de filtrage (si utilisation depuis une TBX ArcGIS Pro)
+    :return: Chemin du fichier CSV résultat
     """
     # Initialisation de la configuration
     scriptDirPath = os.path.dirname(os.path.realpath(__file__))
@@ -215,23 +258,30 @@ def WhatsNew():
 
     # Initialisation des logs
     logPath = __CheckParamFolder(config.getValue("MAIN", "LOG_DIR"), DEFAULT_DIR_LOG)
-    LogTool(printFlag=True, loggingFlag=True, loggingDirPath=logPath)
+    LogTool(printFlag=True, loggingFlag=True, loggingArcGisFlag=loggingArcGisFlag, loggingDirPath=logPath)
     LogTool.Instance().addInfo("==========================================================================")
     LogTool.Instance().addInfo("Liste des élements nouveaux dans l'organisation")
 
     # ==> Configuration générales
     resultDir = __CheckParamFolder(config.getValue("MAIN", "RESULT_DIR"), DEFAULT_DIR_RESULT)
     # ==> Configuration liée à l'organisation source
-    agolUrl = config.getValue('ORGANISATION', 'url')
-    agolUserName = config.getValue('ORGANISATION', 'USER')
-    agolUserPassword = config.getValue('ORGANISATION', 'PASSWORD')
-    agolUserPasswordEncrypted = config.getValue('ORGANISATION', 'PASSWORD_ENCRYPTED')
-    if (agolUserPasswordEncrypted):
-        agolUserPassword = CryptoTool.Decode(agolUserPassword)
+    if(agolUrl == None):
+        agolUrl = config.getValue('ORGANISATION', 'URL')
     ##end if
-    # ==> Configuration liée à l'outil "WhatsNew"
-    fromDate = datetime.datetime.strptime(str(config.getValue("WHATS_NEW", "FROM_DATE")), '%Y-%m-%d')
-
+    if(agolUserName == None):
+        agolUserName = config.getValue('ORGANISATION', 'USER')
+    ##end if
+    if(agolUserPassword == None):
+        agolUserPassword = config.getValue('ORGANISATION', 'PASSWORD')
+        agolUserPasswordEncrypted = config.getValue('ORGANISATION', 'PASSWORD_ENCRYPTED')
+        if (agolUserPasswordEncrypted):
+            agolUserPassword = CryptoTool.Decode(agolUserPassword)
+        ##end if
+    ##end if
+    if(fromDate == None):
+        fromDate = datetime.datetime.strptime(str(config.getValue("WHATS_NEW", "FROM_DATE")), '%Y-%m-%d')
+    ##end if
+    
     # Initialisation des connexions aux organisations
     agol = AgolToolsSDK(agolUrl, agolUserName, agolUserPassword)
     csvResult = CsvTool(resultDir, "AgolTools_WhatsNew")
@@ -274,18 +324,74 @@ def WhatsNew():
     LogTool.Instance().addInfo("Résultat :")
     LogTool.Instance().addInfo(" - CSV : {}".format(csvResult.filePath))
     LogTool.Instance().addInfo("==========================================================================")
+    
+    return csvResult.filePath
 ##end def WhatsNew
 # --------------------------------------------------
 
-# Copie du contenu d'un utilisateur nommé d'une organisation à une autre
-#CopyUserItems()
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# EXECUTION DEPUIS UNE TOOLBOX ARCGIS PRO 
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-#Encodage de mot de passe
-#EncodePassword()
-
-# Liste des webmap avec les url des servcies
-#GetWebMaps()
-#GetWebMapsBroken()
-
-# Récupère la liste des élements nouveaux dans l'organisation
-#WhatsNew()
+if __name__ == '__main__':
+    
+    # Récupération du nom de l'outil transmis en 1er paramètre
+    paramTool = arcpy.GetParameterAsText(0)
+    if (paramTool == None or len(paramTool) == 0):
+        arcpy.AddError("Erreur grave")
+    ##end if
+    
+    # Cas de l'outil d'encodage de mot de passe ???
+    if paramTool == "EncodePassword":                
+        # Récupération des paramètre de la TOOLBOX
+        paramTextToEncode = arcpy.GetParameterAsText(1)
+        # Execution de l'outil
+        paramTextEncoded = EncodePassword(loggingArcGisFlag=True, password=paramTextToEncode)
+        # Renvoie du résultat
+        arcpy.SetParameter(2, paramTextEncoded)
+    ##end if
+    
+    # Cas de l'outil qui récupère la liste des élements nouveaux dans l'organisation
+    elif paramTool == "WhatsNew":
+        # Récupération des paramètre de la TOOLBOX
+        paramAgolUrl = arcpy.GetParameterAsText(1)
+        paramAgolUserName = arcpy.GetParameterAsText(2)
+        paramAgolUserPassword = arcpy.GetParameterAsText(3)
+        paramFromDate = arcpy.GetParameter(4)
+        # Execution de l'outil
+        paramCsvPath = WhatsNew(loggingArcGisFlag=True, agolUrl=paramAgolUrl, agolUserName=paramAgolUserName, agolUserPassword=paramAgolUserPassword, fromDate=paramFromDate)
+        # Renvoie du résultat
+        arcpy.SetParameter(5, paramCsvPath)
+    ##end if
+    
+    # Cas de l'outil qui récupère la liste des webmaps
+    elif paramTool == "GetWebMaps":
+        # Récupération des paramètre de la TOOLBOX
+        paramAgolUrl = arcpy.GetParameterAsText(1)
+        paramAgolUser = arcpy.GetParameterAsText(2)
+        paramAgolPwd = arcpy.GetParameterAsText(3)
+        paramOnlyBroken = arcpy.GetParameter(4)
+        # Execution de l'outil
+        resultCsvName = "AgolTools_GetWebMaps"
+        if(paramOnlyBroken):
+            resultCsvName = "AgolTools_GetWebMapsBroken"
+        ##endif
+        paramCsvPath = GetWebMaps(loggingArcGisFlag=True, resultCsvName=resultCsvName, agolUrl=paramAgolUrl, agolUserName=paramAgolUser, agolUserPassword=paramAgolPwd, flagTestServices=paramOnlyBroken)
+        # Renvoie du résultat
+        arcpy.SetParameter(5, paramCsvPath)
+    ##end if
+    
+    # Cas de l'outil de copie du contenu d'un utilisateur nommé d'une organisation à une autre
+    elif paramTool == "CopyUserItems":
+        # Récupération des paramètre de la TOOLBOX
+        paramAgolSrcUrl = arcpy.GetParameterAsText(1)
+        paramAgolSrcUser = arcpy.GetParameterAsText(2)
+        paramAgolSrcPwd = arcpy.GetParameterAsText(3)
+        paramAgolDstUrl = arcpy.GetParameterAsText(4)
+        paramAgolDstUser = arcpy.GetParameterAsText(5)
+        paramAgolDstPwd = arcpy.GetParameterAsText(6)
+        # Execution de l'outil
+        CopyUserItems(loggingArcGisFlag=True, agolUrl=paramAgolSrcUrl, agolUserName=paramAgolSrcUser, agolUserPassword=paramAgolSrcPwd, agolUrl2=paramAgolDstUrl, agolUserName2=paramAgolDstUser, agolUserPassword2=paramAgolDstPwd)
+    ##end if
+    
+##end if

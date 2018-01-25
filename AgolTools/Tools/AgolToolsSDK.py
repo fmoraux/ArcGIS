@@ -208,8 +208,8 @@ class AgolToolsSDK(object):
         """
         Retourne la liste des services des webmaps
         :param maxItems: Nombre maximale de webmaps
-        :param flagTestServices: Flag pour tester l'URL des servcies des webmaps
-        :return: Liste des servcies des webmaps
+        :param flagTestServices: Flag pour tester l'URL des services des webmaps
+        :return: Liste des services des webmaps
         """
         services = []
 

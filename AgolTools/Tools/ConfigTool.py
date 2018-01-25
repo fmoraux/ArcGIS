@@ -24,7 +24,6 @@
 import os
 
 from configparser import ConfigParser
-from Tools.LogTool import LogTool
 # --------------------------------------------------
 class ConfigTools(object):
     """Classe dédiée au fichier de configuration"""
@@ -46,13 +45,11 @@ class ConfigTools(object):
         self.__configDct = {}
 
         if(self.__configPath != None and os.path.exists(self.__configPath)):
-            self.__log("Read configuration file '{}'...".format(self.__configPath))
             config = ConfigParser()
             config.readfp(open(self.__configPath))
 
             # Parcours des sections ([BLABLA])
             for section in config.sections():
-                self.__log(" - Section '{}'".format(section))
 
                 # Parcours des clés de la section (BLABLA=VALUE)
                 for (key, value) in config.items(section):
@@ -60,14 +57,10 @@ class ConfigTools(object):
                     #En attendant on ruse en repassant en majuscule
                     # Implique que les clés soient en majuscule dans le fichier
                     key = key.upper()
-
-                    self.__log("   - Key '{}'={}".format(key, value))
                     self.__configDct[(section, key)] = value
                 ##end for
 
             ##end for
-
-            self.__log(" - Dictionary : {}".format(self.__configDct))
         ##end if
     ##end def readConfig
 
@@ -82,22 +75,10 @@ class ConfigTools(object):
         if(section != None and len(section) != 0 and key != None and len(key) != 0 and self.__configDct != None):
             if((section, key) in self.__configDct.keys()):
                 value = self.__configDct[(section, key)]
-                self.__log("Get configuration ({},{})={}".format(section, key, value))
             ##end if
         ##end if
         return value
     ##end def getValue
-
-    def __log(self, message):
-        """
-        Ajout d'un message dans les logs si le logger a bien été initialisé
-        :param message: Message
-        :return:
-        """
-        if (LogTool.Instance() != None):
-            LogTool.Instance().addInfo(message)
-        ##end if
-    ##end def log
 
 ##end class ConfigTools
 # --------------------------------------------------
