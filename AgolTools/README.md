@@ -2,11 +2,11 @@ Aide
 ====
 
 Aide à l'utilisation des scripts contenu dans le package **AgolTools** :
->- **[EncodePassword](Aide.md#encodepassword)** pour l'encodage d'un mot de passe ;
->- **[CopyUserItems](Aide.md#copyuseritems)** pour la copie du contenu d'un utilisateur nommé à un autre ;
->- **[GetWebMaps](Aide.md#getwebmaps)** pour récupérer la liste des services des webmaps au format CSV ;
->- **[GetWebMapsBroken](Aide.md#getwebmapsbroken)** pour récupérer la liste des services des webmaps et leurs états au format CSV ;
->- **[WhatsNew](Aide.md#whatsnew)** pour récupérer la liste des nouveautés au format CSV ;
+>- **[EncodePassword](README.md#encodepassword)** pour l'encodage d'un mot de passe ;
+>- **[CopyUserItems](README.md#copyuseritems)** pour la copie du contenu d'un utilisateur nommé à un autre ;
+>- **[GetWebMaps](README.md#getwebmaps)** pour récupérer la liste des services des webmaps au format CSV ;
+>- **[GetWebMapsBroken](README.md#getwebmapsbroken)** pour récupérer la liste des services des webmaps et leurs états au format CSV ;
+>- **[WhatsNew](README.md#whatsnew)** pour récupérer la liste des nouveautés au format CSV ;
 
 
 **Prérequis :**
