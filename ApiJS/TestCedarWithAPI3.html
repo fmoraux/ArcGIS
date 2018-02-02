@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Test CEDAR</title>
+  
+  <!-- Chargement API JS ArcGIS -->
+  <link rel="stylesheet" href="https://js.arcgis.com/3.23/dijit/themes/claro/claro.css">
+  <link rel="stylesheet" href="https://js.arcgis.com/3.23/esri/css/esri.css">
+  <script src="https://js.arcgis.com/3.23/"></script>
+
+<!-- Chargement API JS AmCharts -->
+<script src="https://www.amcharts.com/lib/3/amcharts.js"></script>
+<script src="https://www.amcharts.com/lib/3/serial.js"></script>
+<script src="https://www.amcharts.com/lib/3/plugins/export/export.min.js"></script>
+<link rel="stylesheet" href="https://www.amcharts.com/lib/3/plugins/export/export.css" type="text/css" media="all" />
+<script src="https://www.amcharts.com/lib/3/themes/light.js"></script>
+<script src="https://www.amcharts.com/lib/3/plugins/export/examples/export.config.default.js"></script>
+
+  <style>
+    html, body, #map{
+      width:100%;
+      height:100%;
+      margin:0;
+      padding:0;
+    }
+    
+    #chartRoot {
+      width: 100%;
+      height: 100%
+    }
+    
+    .amcharts-export-menu-top-right {
+      top: 10px;
+      right: 0;
+    }
+  </style>
+
+  <script>
+    require([
+      "esri/layers/FeatureLayer",
+      "esri/dijit/FeatureTable",
+      "esri/geometry/webMercatorUtils",
+      "esri/map",
+      "esri/symbols/SimpleMarkerSymbol",
+      "esri/tasks/query",
+      "esri/tasks/QueryTask",
+      "esri/tasks/StatisticDefinition",
+      "dojo/dom-construct",
+      "dojo/dom",
+      "dojo/parser",
+      "dojo/ready",
+      "dojo/on",
+      "dojo/_base/lang",
+      "dijit/registry",
+      "dijit/form/Button",
+      "dijit/layout/ContentPane",
+      "dijit/layout/BorderContainer",
+      "dijit/form/TextBox"
+    ], function (
+      FeatureLayer, FeatureTable, webMercatorUtils, Map, SimpleMarkerSymbol, Query, QueryTask, StatisticDefinition,
+      domConstruct, dom, parser, ready, on,lang,
+      registry, Button, ContentPane, BorderContainer, TextBox
+    ) {
+      parser.parse();
+      
+      var map;
+      var layer;
+      var table;
+
+      ready(function(){
+
+        /**
+         * Ajout d'une couche à la carte
+         **/
+        addLayer = function(layerUrl, layerFields){
+          // Initialisation de la couche
+          layer = new FeatureLayer(layerUrl, {
+            mode: FeatureLayer.MODE_ONDEMAND,
+            visible: true,
+             outFields: layerFields,
+            id: "layer"
+          });
+          
+          // Définition du symbole de sélection
+          var symbol = new SimpleMarkerSymbol({
+            "color": [0,255,255,255],
+            "size": 12,
+            "angle": -30,
+            "xoffset": 0,
+            "yoffset": 0,
+            "type": "esriSMS",
+            "style": "esriSMSCircle",
+            "outline": {
+              "color": [0,255,255,255],
+              "width": 1,
+              "type": "esriSLS",
+              "style": "esriSLSSolid"
+            }
+          });
+          layer.setSelectionSymbol(symbol);
+
+          // Zoom sur la couche une fois celle-ci chargée
+          on(layer, "load", function(evt){
+            var extent = layer.fullExtent;
+            if (webMercatorUtils.canProject(extent, map)) {
+              map.setExtent( webMercatorUtils.project(extent, map) );
+            }
+          });
+
+          // Ajout à la carte
+          map.addLayer(layer);
+
+          // Initialisation de la table
+          addTable(layer, layerFields);
+          
+          // Initialisation du diagramme
+          addChart(layerUrl, "Arrondissement");
+        };
+
+        /**
+         * Ajout de la table liée à la couche ajoutée à la carte
+         **/
+        addTable = function(layer, layerFields){
+
+          // Initialisation de la table
+          table = new FeatureTable({
+            "map" : map,
+            "featureLayer" : layer,
+            "outFields": layerFields,
+            "syncSelection": true
+          }, 'tableRoot');
+          table.startup();
+        };
+
+        /**
+         * Ajout du diagramme lié à la couche ajoutée à la carte
+         **/
+        addChart = function(layerUrl, statisticField){
+          
+          // Définition d'un nouveau champ pour les statistiques
+          var outStatisticFieldName = "CountByArrondissement";
+          var outStatisticFieldLabel = "Nb. tournages";
+          
+          // Initialisation de la demande de statstique
+          var statisticDefinition = new StatisticDefinition();
+          statisticDefinition.onStatisticField = statisticField;
+          statisticDefinition.outStatisticFieldName = outStatisticFieldName
+          statisticDefinition.statisticType = "count";
+          
+          // Initialisation de la requête
+          var query = new Query();
+          query.returnGeometry = false;
+          query.where = "1=1";
+          query.outFields = [statisticField];
+          query.groupByFieldsForStatistics = [statisticField];
+          query.outStatistics = [statisticDefinition];
+        
+          // Execution de la requête
+          var queryTask = new QueryTask(layerUrl);
+          queryTask.execute(query, queryTaskHandler);
+          function queryTaskHandler(evt){
+            if(evt == null || evt.features == null){
+              return;
+            }
+            
+            // Récupération et préparation des données
+            
+            var bulletStep = 500;
+            var bulletPath = "http://www.icone-png.com/png/1/554.png";
+            var datas = [];
+            for(index in evt.features){
+              if(evt.features[index] == null || evt.features[index].attributes == null){
+                continue;
+              }
+              var data = evt.features[index].attributes;
+              
+              // On ajout une étoile quand le nombre de tournage est important
+              if(data[outStatisticFieldName] >= bulletStep){
+                data.bullet = bulletPath;
+              }
+              
+              // Couleur :
+              // ==> En l'absence de code couleur hexa ==> Valeur automatique
+              // ==> Couleur unique (data.color = "#7F8DA9";)
+              // ==> Couleur unique aléatoire
+              data.color = "#" + (Math.random()*0xFFFFFF<<0).toString(16);
+              
+              datas.push(data);
+            }
+            
+            // Customisation du menu contextuel du diagramme
+            // https://www.amcharts.com/kbase/adding-custom-action-items-export-menu/
+            // ==> Ouverture du diagramme dans un nouvel onglet
+            openInNewTabHandler = function(evt){
+              var chartRootNode = document.getElementById("chartRoot");
+              var win = window.open("", "Diagramme");
+              if(chartRootNode == null || win == null){
+                return
+              }
+              
+              // Création du nouveau document et intégration du diagramme
+              win.document.write('<html>');
+              win.document.write('<head>');
+              win.document.write('<title>Diagramme</title>');
+              win.document.write('<script src="https://www.amcharts.com/lib/3/amcharts.js"><\/script>');
+              win.document.write('<script src="https://www.amcharts.com/lib/3/serial.js"><\/script>');
+              win.document.write('<script src="https://www.amcharts.com/lib/3/plugins/export/export.min.js"><\/script>');
+              win.document.write('<link rel="stylesheet" href="https://www.amcharts.com/lib/3/plugins/export/export.css" type="text/css" media="all" />');
+              win.document.write('<script src="https://www.amcharts.com/lib/3/themes/light.js"><\/script>');
+              win.document.write('<script src="https://www.amcharts.com/lib/3/plugins/export/examples/export.config.default.js"><\/script>');
+              win.document.write('</head>');
+              win.document.write('<body>' + chartRootNode.innerHTML + '</body>');
+              win.document.write('</html>');
+              win.document.close();
+            };
+            AmCharts.exportCFG.menu[0].menu.push({
+              "label": "Open in new tab",
+              "click": openInNewTabHandler
+            });
+            
+            // Initialisation du diagramme
+            var chart = AmCharts.makeChart("chartRoot", {
+              "type": "serial",
+              "theme": "light",
+              "marginRight": 70,
+              "dataProvider": datas,
+              "valueAxes": [{
+                "axisAlpha": 0,
+                "position": "left",
+                "title": outStatisticFieldLabel
+              }],
+              "startDuration": 1,
+              "graphs": [{
+                "balloonText": "<b>[[category]]: [[value]]</b>",
+                
+                "customBulletField": "bullet",
+                "bulletOffset": 10,
+                "bulletSize": 20,
+                
+                "fillColorsField": "color",
+                "fillAlphas": 0.5,
+                "lineAlpha": 0.25,
+                "type": "column",
+                "valueField": outStatisticFieldName
+              }],
+              "chartCursor": {
+                "categoryBalloonEnabled": false,
+                "cursorAlpha": 0,
+                "zoomable": false
+              },
+              "categoryField": statisticField,
+              "categoryAxis": {
+                "gridPosition": "start",
+                "labelRotation": 45
+              },
+              "export": AmCharts.exportCFG
+            });
+          }
+        };
+        
+        // Initialisation de la carte
+        map = new Map("mapRoot",{
+          basemap: "gray"
+        });
+        map.on("load", mapLoadedHandler);
+        function mapLoadedHandler(){
+          
+          var layerUrl = "https://services.arcgis.com/S3Ai1AW0LHe63cdi/arcgis/rest/services/Tournages_de_films_%C3%A0_Paris/FeatureServer/0";
+          var layerFields = ["Titre", "Realisateur", "Arrondissement"];
+          addLayer(layerUrl, layerFields);
+          
+        }
+      });
+    });
+  </script>
+</head>
+
+<body class="claro esri">
+  <div data-dojo-type="dijit/layout/BorderContainer" data-dojo-props="design:'headline'" style="width:100%; height:100%;">
+    <div data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center', splitter:true" style="height:50%">
+      <div style="height:100%" id="mapRoot"></div>
+    </div>
+    
+    <div id="bot" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'bottom', splitter:true" style="height:50%">
+      <div style="height:100%">
+          <div data-dojo-type="dijit/layout/TabContainer" style="width: 100%; height: 100%;">
+              <div data-dojo-type="dijit/layout/ContentPane" title="FeatureTable">
+                  <div id="tableRoot"></div>
+              </div>
+              
+              <div data-dojo-type="dijit/layout/ContentPane" title="Cedar" data-dojo-props="selected:true">
+                  <div id="chartRoot"></div>
+              </div>
+          </div>
+      </div>
+    </div>
+  </div>
+  
+
+</body>
+</html>
